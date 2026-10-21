@@ -18,14 +18,14 @@ if not os.path.exists(DATA_FILE):
     ])
     df_init.to_csv(DATA_FILE, index=False, encoding="utf_8_sig")
 
-st.title("手軽な家計簿アプリ（支払内訳・カテゴリ最適化版）")
+st.title("手軽な家計簿アプリ（支払内訳・割引/優待対応版）")
 
 # --- 入力フォームエリア ---
 st.header("支出の入力")
 
 date = st.date_input("日付", datetime.date.today())
 
-# ご指定の10カテゴリに確定
+# ご指定の10カテゴリ
 categories = [
     "食費", "外食", "ペット", "日用品", "医療費", 
     "スマホ代", "ネット・通信", "交通費", "光熱費", "その他"
@@ -35,6 +35,22 @@ category = st.selectbox("カテゴリ", categories)
 with st.form(key="kakeibo_form", clear_on_submit=True):
     purchase_place = st.radio("購入場所", ["実店舗", "ネット販売"], horizontal=True)
     
+    # --- カテゴリに応じた割引・優待の入力 ---
+    discount_memo = ""
+    if category == "外食":
+        st.markdown("---")
+        st.markdown("🍽️ **【株主優待の利用】**")
+        total_price = st.number_input("支払総額（メニューの合計金額・定価）", min_value=0, step=100, value=0)
+        actual_price = st.number_input("実際に支払った額（自己負担額）", min_value=0, step=100, value=0)
+        benefit = total_price - actual_price
+        if benefit > 0:
+            discount_memo = f"【総額:{total_price:,}円 / 優待利用:{benefit:,}円】"
+    else:
+        # 外食以外のカテゴリ（夜間割引などを想定した値引き率）
+        discount_rate = st.number_input("値引き率（% ※なければ0）", min_value=0.0, max_value=100.0, step=1.0, value=0.0)
+        if discount_rate > 0:
+            discount_memo = f"【値引き率:{int(discount_rate)}%】"
+
     st.markdown("---")
     st.markdown("💳 **【支払方法の内訳】それぞれの金額を入力してください**")
     
@@ -46,12 +62,12 @@ with st.form(key="kakeibo_form", clear_on_submit=True):
         pay_card = st.number_input("クレジットカード（円）", min_value=0, step=100, value=0)
         pay_qr = st.number_input("電子マネー / QR決済（円）", min_value=0, step=100, value=0)
     
-    # 合計金額の自動計算
+    # 支払合計金額の自動計算
     amount = pay_cash + pay_card + pay_ticket + pay_qr
     st.info(f"💡 支払合計金額: **{amount:,} 円**")
     st.markdown("---")
     
-    memo = st.text_input("メモ（自由記入）")
+    user_memo = st.text_input("メモ（自由記入）")
 
     submit_button = st.form_submit_button(label="記録する")
 
@@ -60,9 +76,12 @@ if submit_button:
     if amount == 0:
         st.warning("金額が0円です。支払内訳のいずれかに金額を入力してください。")
     else:
+        # 優待/割引メモと自由メモを合体
+        final_memo = f"{discount_memo} {user_memo}".strip()
+        
         new_data = pd.DataFrame([[
             str(date), category, amount, purchase_place, 
-            pay_cash, pay_card, pay_ticket, pay_qr, memo
+            pay_cash, pay_card, pay_ticket, pay_qr, final_memo
         ]], columns=[
             "日付", "カテゴリ", "金額", "購入場所", 
             "現金", "カード", "金券", "電子マネー", "メモ"
@@ -151,7 +170,7 @@ if not df_all.empty:
             label=f"📥 {selected_month} のデータをCSVダウンロード",
             data=csv_data,
             file_name=f"kakeibo_{selected_month.replace('年','_').replace('月','')}.csv",
-            mime="text/csv"
+            mime="text/css" if False else "text/csv"
         )
     with col_dl2:
         if st.button("🖨️ この月のレポートを印刷 / PDF保存"):
