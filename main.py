@@ -15,52 +15,55 @@ if not os.path.exists(DATA_FILE):
     df_init = pd.DataFrame(columns=["日付", "カテゴリ", "金額", "購入場所", "メモ"])
     df_init.to_csv(DATA_FILE, index=False, encoding="utf_8_sig")
 
-st.title("手軽な家計簿アプリ（支出特化・優待対応版）")
+st.title("手軽な家計簿アプリ（支出特化・優待＆割引対応版）")
 
 # --- 入力フォームエリア ---
 st.header("支出の入力")
+
+# ★カテゴリ選択をフォームの外に置くことで、選択変更時に即座に画面が切り替わります
+date = st.date_input("日付", datetime.date.today())
+
+categories = [
+    "食費", "外食", "日用品", "医療費", 
+    "スマホ代", "ネット代", "それ以外の通信費", 
+    "交通費", "交際費", "趣味・娯楽", "住宅・光熱費", "その他"
+]
+category = st.selectbox("カテゴリ", categories)
+
 with st.form(key="kakeibo_form", clear_on_submit=True):
-    date = st.date_input("日付", datetime.date.today())
-    
-    categories = [
-        "食費", "外食", "日用品", "医療費", 
-        "スマホ代", "ネット代", "それ以外の通信費", 
-        "交通費", "交際費", "趣味・娯楽", "住宅・光熱費", "その他"
-    ]
-    category = st.selectbox("カテゴリ", categories)
-    
-    # 購入場所
     purchase_place = st.radio("購入場所", ["実店舗", "ネット販売"], horizontal=True)
     
-    # ★「外食」を選んだときだけ表示される専用入力欄
+    # ★「外食」を選んだとき
     if category == "外食":
         st.markdown("---")
         st.markdown("🍽️ **【株主優待の利用】**")
         total_price = st.number_input("支払総額（メニューの合計金額・定価）", min_value=0, step=100, value=0)
         actual_price = st.number_input("実際に支払った額（自己負担額）", min_value=0, step=100, value=0)
         
-        # 家計簿の集計対象（金額）には、実際に財布から出した「実際の支払額」を採用
         amount = actual_price
-        
-        # 優待額（差額）の自動計算
         benefit = total_price - actual_price
         if benefit > 0:
             benefit_memo = f"【総額:{total_price:,}円 / 優待利用:{benefit:,}円】"
         else:
             benefit_memo = ""
         st.markdown("---")
-    else:
-        # 外食以外の通常カテゴリ
-        amount = st.number_input("金額（円）", min_value=0, step=100)
-        benefit_memo = ""
         
+    else:
+        # ★外食以外のカテゴリ（食料品の夜間割引などを想定した値引き率）
+        amount = st.number_input("金額（円）", min_value=0, step=100)
+        discount_rate = st.number_input("値引き率（% ※なければ0）", min_value=0.0, max_value=100.0, step=1.0, value=0.0)
+        
+        if discount_rate > 0:
+            benefit_memo = f"【値引き率:{int(discount_rate)}%】"
+        else:
+            benefit_memo = ""
+
     memo = st.text_input("メモ（自由記入）")
 
     submit_button = st.form_submit_button(label="記録する")
 
 # 登録ボタンが押された時の処理
 if submit_button:
-    # 優待メモと通常のメモを自動で合体させる
     final_memo = f"{benefit_memo} {memo}".strip()
     
     new_data = pd.DataFrame([[
@@ -150,7 +153,7 @@ if not df_all.empty:
             label=f"📥 {selected_month} のデータをCSVダウンロード",
             data=csv_data,
             file_name=f"kakeibo_{selected_month.replace('年','_').replace('月','')}.csv",
-            mime="text/css" if False else "text/csv"
+            mime="text/csv"
         )
     with col_dl2:
         if st.button("🖨️ この月のレポートを印刷 / PDF保存"):
