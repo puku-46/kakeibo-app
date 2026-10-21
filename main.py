@@ -18,7 +18,7 @@ if not os.path.exists(DATA_FILE):
     ])
     df_init.to_csv(DATA_FILE, index=False, encoding="utf_8_sig")
 
-st.title("手軽な家計簿アプリ（支払内訳・割引/優待対応版）")
+st.title("手軽な家計簿アプリ")
 
 # --- 入力フォームエリア ---
 st.header("支出の入力")
