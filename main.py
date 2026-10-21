@@ -12,68 +12,66 @@ DATA_FILE = "kakeibo.csv"
 
 # CSVファイルの初期化（存在しない場合のみ作成）
 if not os.path.exists(DATA_FILE):
-    df_init = pd.DataFrame(columns=["日付", "カテゴリ", "金額", "購入場所", "メモ"])
+    df_init = pd.DataFrame(columns=[
+        "日付", "カテゴリ", "金額", "購入場所", 
+        "現金", "カード", "金券", "電子マネー", "メモ"
+    ])
     df_init.to_csv(DATA_FILE, index=False, encoding="utf_8_sig")
 
-st.title("手軽な家計簿アプリ（支出特化・優待＆割引対応版）")
+st.title("手軽な家計簿アプリ（支払内訳・カテゴリ最適化版）")
 
 # --- 入力フォームエリア ---
 st.header("支出の入力")
 
-# ★カテゴリ選択をフォームの外に置くことで、選択変更時に即座に画面が切り替わります
 date = st.date_input("日付", datetime.date.today())
 
+# ご指定の10カテゴリに確定
 categories = [
-    "食費", "外食", "日用品", "医療費", 
-    "スマホ代", "ネット代", 
-    "交通費", "趣味・娯楽", "光熱費", "その他"
+    "食費", "外食", "ペット", "日用品", "医療費", 
+    "スマホ代", "ネット・通信", "交通費", "光熱費", "その他"
 ]
 category = st.selectbox("カテゴリ", categories)
 
 with st.form(key="kakeibo_form", clear_on_submit=True):
     purchase_place = st.radio("購入場所", ["実店舗", "ネット販売"], horizontal=True)
     
-    # ★「外食」を選んだとき
-    if category == "外食":
-        st.markdown("---")
-        st.markdown("🍽️ **【株主優待の利用】**")
-        total_price = st.number_input("支払総額（メニューの合計金額・定価）", min_value=0, step=100, value=0)
-        actual_price = st.number_input("実際に支払った額（自己負担額）", min_value=0, step=100, value=0)
-        
-        amount = actual_price
-        benefit = total_price - actual_price
-        if benefit > 0:
-            benefit_memo = f"【総額:{total_price:,}円 / 優待利用:{benefit:,}円】"
-        else:
-            benefit_memo = ""
-        st.markdown("---")
-        
-    else:
-        # ★外食以外のカテゴリ（食料品の夜間割引などを想定した値引き率）
-        amount = st.number_input("金額（円）", min_value=0, step=100)
-        discount_rate = st.number_input("値引き率（% ※なければ0）", min_value=0.0, max_value=100.0, step=1.0, value=0.0)
-        
-        if discount_rate > 0:
-            benefit_memo = f"【値引き率:{int(discount_rate)}%】"
-        else:
-            benefit_memo = ""
-
+    st.markdown("---")
+    st.markdown("💳 **【支払方法の内訳】それぞれの金額を入力してください**")
+    
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        pay_cash = st.number_input("現金（円）", min_value=0, step=100, value=0)
+        pay_ticket = st.number_input("金券・優待券（円）", min_value=0, step=100, value=0)
+    with col_p2:
+        pay_card = st.number_input("クレジットカード（円）", min_value=0, step=100, value=0)
+        pay_qr = st.number_input("電子マネー / QR決済（円）", min_value=0, step=100, value=0)
+    
+    # 合計金額の自動計算
+    amount = pay_cash + pay_card + pay_ticket + pay_qr
+    st.info(f"💡 支払合計金額: **{amount:,} 円**")
+    st.markdown("---")
+    
     memo = st.text_input("メモ（自由記入）")
 
     submit_button = st.form_submit_button(label="記録する")
 
 # 登録ボタンが押された時の処理
 if submit_button:
-    final_memo = f"{benefit_memo} {memo}".strip()
-    
-    new_data = pd.DataFrame([[
-        str(date), category, amount, purchase_place, final_memo
-    ]], columns=["日付", "カテゴリ", "金額", "購入場所", "メモ"])
-    
-    df = pd.read_csv(DATA_FILE, encoding="utf_8_sig")
-    df = pd.concat([df, new_data], ignore_index=True)
-    df.to_csv(DATA_FILE, index=False, encoding="utf_8_sig")
-    st.success("記録しました！")
+    if amount == 0:
+        st.warning("金額が0円です。支払内訳のいずれかに金額を入力してください。")
+    else:
+        new_data = pd.DataFrame([[
+            str(date), category, amount, purchase_place, 
+            pay_cash, pay_card, pay_ticket, pay_qr, memo
+        ]], columns=[
+            "日付", "カテゴリ", "金額", "購入場所", 
+            "現金", "カード", "金券", "電子マネー", "メモ"
+        ])
+        
+        df = pd.read_csv(DATA_FILE, encoding="utf_8_sig")
+        df = pd.concat([df, new_data], ignore_index=True)
+        df.to_csv(DATA_FILE, index=False, encoding="utf_8_sig")
+        st.success("記録しました！")
 
 # --- データの読み込み ---
 try:
@@ -100,7 +98,7 @@ if not df_all.empty:
     budget_options = [0, 5000, 10000, 20000, 30000, 40000, 50000, 70000, 100000, 150000]
     
     budgets = {}
-    for cat in ["食費", "外食", "日用品", "医療費", "趣味・娯楽"]:
+    for cat in ["食費", "外食", "日用品", "ペット", "医療費"]:
         default_idx = 3 if cat == "食費" else 0
         budgets[cat] = st.sidebar.selectbox(f"{cat} の予算", budget_options, index=default_idx, key=f"budget_{cat}")
 
@@ -108,7 +106,7 @@ if not df_all.empty:
     st.header(f"📊 {selected_month} の支出レポート")
     
     total_expense = df_month["金額"].sum()
-    st.metric("今月の総支出（実費ベース）", f"{total_expense:,} 円")
+    st.metric("今月の総支出", f"{total_expense:,} 円")
     
     st.divider()
 
@@ -123,7 +121,7 @@ if not df_all.empty:
     st.subheader("📝 履歴の確認・編集")
     st.caption("※表の中をダブルクリックして値を直接変更できます。行の左端にチェックを入れて『選択行を削除』を押すと削除できます。")
 
-    display_cols = ["日付", "カテゴリ", "金額", "購入場所", "メモ"]
+    display_cols = ["日付", "カテゴリ", "金額", "購入場所", "現金", "カード", "金券", "電子マネー", "メモ"]
     edited_df_month = st.data_editor(
         df_month[display_cols],
         use_container_width=True,
