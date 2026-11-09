@@ -212,6 +212,10 @@ tempCodeRunnerFile.py
 # Marimo
 marimo/_static/
 marimo/_lsp/
+
+kakeibo.csv
+members.csv
+*.json
 __marimo__/
 
 # Streamlit
