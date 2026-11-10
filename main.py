@@ -520,14 +520,14 @@ with tab2:
 # ==========================================
 with tab3:
     # --- 入力者の登録（データが空でも使えるよう、一番上に置く）---
-    with st.expander("👥 入力者の登録・管理"):
-        st.caption("入力画面で選べる名前を登録します。1行に1人ずつ入力してください。")
+    with st.expander("👥 支払い区分の登録・管理"):
+        st.caption("入力画面で選べる名前を登録します。1行に1つずつ入力してください。")
         members_now = load_members()
-        names_text = st.text_area("入力者", "\n".join(members_now), height=120)
-        if st.button("入力者を保存", key="save_members"):
+        names_text = st.text_area("支払い区分", "\n".join(members_now), height=120)
+        if st.button("支払い区分を保存", key="save_members"):
             names = list(dict.fromkeys(n.strip() for n in names_text.splitlines() if n.strip()))
             save_members(names)
-            st.success(f"{len(names)}人を登録しました。")
+            st.success(f"{len(names)}件を登録しました。")
             st.rerun()
  
     df_all = load_data()
