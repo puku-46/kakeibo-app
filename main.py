@@ -469,10 +469,11 @@ with tab2:
  
         editor_ver = st.session_state.get("editor_ver", 0)
         edited = st.data_editor(
-            view,
-            num_rows="fixed",          # 行の追加は「支出の入力」タブで行います
-            key=f"data_editor_{selected_month}_{editor_ver}",
-        )
+    view,
+    num_rows="fixed",          # 行の追加は「支出の入力」タブで行います
+    column_config={"入力者": st.column_config.TextColumn(label="支払い区分")},
+    key=f"data_editor_{selected_month}_{editor_ver}",
+)
  
         if st.button("変更を確定して保存する", type="primary", key="save_btn"):
             keep = edited[~edited["削除"].fillna(False).astype(bool)].drop(columns="削除")
