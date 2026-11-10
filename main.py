@@ -343,9 +343,9 @@ with tab1:
         if members:
             last = st.session_state.get("last_person")
             idx = members.index(last) if last in members else None
-            person = st.selectbox("入力者", members, index=idx, placeholder="選んでください")
+            person = st.selectbox("支払い区分", members, index=idx, placeholder="選んでください")
         else:
-            st.info("入力者が未登録です。「🔍 分析」タブの「入力者の登録」から登録できます。")
+            st.info("支払い区分が未登録です。「🔍 分析」タブの「支払い区分の登録」から登録できます。")
  
         purchase_place = st.radio("購入場所", ["実店舗", "ネット販売"], horizontal=True)
  
@@ -373,7 +373,7 @@ with tab1:
     if submit_button:
         store = new_store.strip() or picked_store
         if members and not person:
-            st.warning("入力者を選んでください。")
+            st.warning("支払い区分を選んでください。")
         elif amount == 0:
             st.warning("金額が0円です。金額を入力してください。")
         elif card_amount > amount:
