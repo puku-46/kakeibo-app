@@ -6,6 +6,8 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
+
+import json 
  
 st.set_page_config(page_title="手軽な家計簿アプリ", page_icon="💰")
  
@@ -147,19 +149,27 @@ def to_csv_bytes(df):
 #   Secrets に gcp_service_account と SPREADSHEET_ID があればスプレッドシート、
 #   なければローカルCSVを使います。
 # ==========================================
+
 def use_sheets():
     try:
-        return "gcp_service_account" in st.secrets and "SPREADSHEET_ID" in st.secrets
+        # Secretsの中に "gspread" と "SPREADSHEET_ID" が両方あればスプレッドシートを使用
+        return "gspread" in st.secrets and "SPREADSHEET_ID" in st.secrets
     except Exception:
         return False
- 
- 
+
+
 @st.cache_resource
 def get_spreadsheet():
     import gspread
- 
-    gc = gspread.service_account_from_dict(dict(st.secrets["gcp_service_account"]))
-    return gc.open_by_key(st.secrets["SPREADSHEET_ID"])
+
+    # 1. 埋め込んだJSON文字列をPythonの辞書型に変換
+    secret_credentials = json.loads(st.secrets["gspread"]["json_secrets"])
+
+    # 2. 辞書型データを使って認証
+    gc = gspread.service_account_from_dict(secret_credentials)
+
+    # 3. 指定されたIDのスプレッドシートを開く
+    return gc.open_by_key(st.secrets["1t8PmEGoqNp6E3UvjFBGAOv1krZcLy6C8sFCk6Z66z-Y"])
  
  
 @st.cache_resource
