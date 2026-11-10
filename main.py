@@ -169,7 +169,7 @@ def get_spreadsheet():
     gc = gspread.service_account_from_dict(secret_credentials)
 
     # 3. 指定されたIDのスプレッドシートを開く
-    return gc.open_by_key(st.secrets["1t8PmEGoqNp6E3UvjFBGAOv1krZcLy6C8sFCk6Z66z-Y"])
+    return gc.open_by_key(st.secrets["SPREADSHEET_ID"])
  
  
 @st.cache_resource
