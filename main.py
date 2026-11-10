@@ -587,7 +587,7 @@ with tab3:
                 .sort_values("日付", ascending=False)
             )
             detail["日付"] = detail["日付"].dt.strftime("%Y-%m-%d")
-            st.dataframe(detail, hide_index=True)
+            st.dataframe(detail.rename(columns={"入力者": "支払い区分"}), hide_index=True)
  
         # --- CSVエクスポート ---
         st.subheader("📥 CSVエクスポート")
