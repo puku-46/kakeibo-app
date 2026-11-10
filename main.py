@@ -290,7 +290,7 @@ def build_summary(month, dfm):
         return dfm[dfm[col] != ""].groupby(col)["金額"].sum().sort_values(ascending=False).head(n)
  
     cat = dfm.groupby("カテゴリ")["金額"].sum().sort_values(ascending=False).head(5)
-    for title, s in (("カテゴリ別（上位5）", cat), ("お店別（上位5）", top("店名")), ("入力者別", top("入力者", 10))):
+    for title, s in (("カテゴリ別（上位5）", cat), ("お店別（上位5）", top("店名")), ("支払い区分別", top("入力者", 10))):
         if not s.empty:
             lines.append("")
             lines.append(f"■{title}")
