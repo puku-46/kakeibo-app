@@ -548,7 +548,7 @@ with tab3:
         with st.expander(f"カード払いの明細（{len(card_df)}件）"):
             card_view = card_df.copy()
             card_view["日付"] = card_view["日付"].dt.strftime("%Y-%m-%d")
-            st.dataframe(card_view, hide_index=True)
+            st.dataframe(card_view.rename(columns={"入力者": "支払い区分"}), hide_index=True)
  
         # --- 入力者別 ---
         st.subheader("👤 入力者別の支出")
