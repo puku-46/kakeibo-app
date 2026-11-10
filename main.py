@@ -551,12 +551,14 @@ with tab3:
             st.dataframe(card_view.rename(columns={"入力者": "支払い区分"}), hide_index=True)
  
         # --- 入力者別 ---
-        st.subheader("👤 入力者別の支出")
+        # --- 支払い区分別 ---
+        st.subheader("👤 支払い区分別の支出")
         person_sum = dfm[dfm["入力者"] != ""].groupby("入力者")["金額"].sum().sort_values(ascending=False)
         if person_sum.empty:
-            st.info("入力者が入力された記録が、この月にはまだありません。")
+            st.info("支払い区分が入力された記録が、この月にはまだありません。")
         else:
-            st.dataframe(person_sum)
+            st.dataframe(person_sum.rename_axis("支払い区分"))
+        
  
         # --- お店別 ---
         st.subheader("🏪 お店別の支出")
