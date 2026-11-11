@@ -557,7 +557,7 @@ with tab3:
             card_view = card_df.copy()
             card_view["日付"] = card_view["日付"].dt.strftime("%Y-%m-%d")
             st.dataframe(card_view.rename(columns={"入力者": "支払い区分"}), hide_index=True)
-　　　　 if not card_df.empty:
+        if not card_df.empty:
             card_text = st.text_area(
                 "カード利用額の送信内容（編集できます）",
                 build_card_message(sel, card_df),
