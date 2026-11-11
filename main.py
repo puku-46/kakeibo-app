@@ -318,12 +318,6 @@ st.title("手軽な家計簿アプリ")
 if not check_password():
     st.stop()
 
-if DATA_FILE.exists():
-    st.download_button("【一時】旧CSVを取り出す", data=DATA_FILE.read_bytes(),
-                       file_name="kakeibo_old.csv", mime="text/csv")
-else:
-    st.caption("【一時】旧CSVは残っていません")
-
 
 if use_sheets():
     st.caption("💾 保存先：Googleスプレッドシート")
