@@ -276,25 +276,27 @@ def bar_chart(series, label):
     )
  
  
-def build_summary(month, dfm):
-    """LINEなどに送る、月のまとめ文章を作る"""
-    total = int(dfm["金額"].sum())
-    card = int(dfm["カード利用額"].sum())
-    lines = [
-        f"【{month} 家計簿まとめ】",
-        f"総支出: {total:,}円",
-        f"うちカード利用額: {card:,}円（翌月引き落としの目安）",
-    ]
- 
-    def top(col, n=5):
-        return dfm[dfm[col] != ""].groupby(col)["金額"].sum().sort_values(ascending=False).head(n)
- 
-    cat = dfm.groupby("カテゴリ")["金額"].sum().sort_values(ascending=False).head(5)
-    for title, s in (("カテゴリ別（上位5）", cat), ("お店別（上位5）", top("店名")), ("支払い区分別", top("入力者", 10))):
-        if not s.empty:
-            lines.append("")
-            lines.append(f"■{title}")
-            lines += [f"・{k}: {int(v):,}円" for k, v in s.items()]
+def build_card_message(month, card_df):
+    """カード利用額のLINE通知文を作る"""
+    total = int(card_df["カード利用額"].sum())
+    lines = [f"【{month} クレジットカード利用額】", f"合計: {total:,}円（{len(card_df)}件）"]
+    if not card_df.empty:
+        lines += ["", "■明細"]
+        for _, r in card_df.iterrows():
+            store = r["店名"] or "（店名なし）"
+            lines.append(f"・{r['日付'].strftime('%m/%d')} {store} {int(r['カード利用額']):,}円")
+    return "\n".join(lines)
+
+
+def build_store_message(title, target_df, stores, with_detail):
+    """選んだお店の集計のLINE通知文を作る"""
+    lines = [f"【{title} お店別の支出】"]
+    for s in stores:
+        d = target_df[target_df["店名"] == s]
+        lines.append(f"■{s}: {int(d['金額'].sum()):,}円（{len(d)}回）")
+        if with_detail:
+            for _, r in d.sort_values("日付").iterrows():
+                lines.append(f"　・{r['日付'].strftime('%m/%d')} {int(r['金額']):,}円")
     return "\n".join(lines)
  
  
