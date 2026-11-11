@@ -605,7 +605,20 @@ with tab3:
             )
             detail["日付"] = detail["日付"].dt.strftime("%Y-%m-%d")
             st.dataframe(detail.rename(columns={"入力者": "支払い区分"}), hide_index=True)
- 
+            st.markdown("**📨 LINEで通知する**")
+            picked = st.multiselect("通知するお店を選ぶ（複数選べます）", list(store_sum.index))
+            with_detail = st.checkbox("日ごとの明細も付ける")
+            if picked:
+                title = sel if scope == "選択した月" else "全期間"
+                store_text = st.text_area(
+                    "お店別の送信内容（編集できます）",
+                    build_store_message(title, with_store, picked, with_detail),
+                    height=200,
+                )
+                if st.button("選んだお店をLINEに送信", key="line_store"):
+                    ok, info = send_line(store_text)
+                    st.success(info) if ok else st.warning(info)
+
         # --- CSVエクスポート ---
         st.subheader("📥 CSVエクスポート")
         ym_key = sel.replace("年", "_").replace("月", "")
