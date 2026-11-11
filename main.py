@@ -565,7 +565,10 @@ with tab3:
             )
             if st.button("カード利用額をLINEに送信", key="line_card"):
                 ok, info = send_line(card_text)
-                st.success(info) if ok else st.warning(info)　
+                if ok:
+                    st.success(info)
+                else:
+                    st.warning(info)
 
         # --- 入力者別 ---
         # --- 支払い区分別 ---
