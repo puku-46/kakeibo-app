@@ -653,12 +653,3 @@ with tab3:
                     key="export_store",
                 )
  
-        # --- LINE送信 ---
-        st.subheader("📨 LINEで送る")
-        text = st.text_area("送信する内容（編集できます）", build_summary(sel, dfm), height=260)
-        if st.button("LINEに送信", key="line_send"):
-            ok, info = send_line(text)
-            if ok:
-                st.success(info)
-            else:
-                st.warning(info)
