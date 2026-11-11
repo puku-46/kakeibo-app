@@ -299,15 +299,20 @@ def build_summary(month, dfm):
  
  
 def send_line(text):
-    """LINE送信（別プログラムで作成予定）。ここに送信処理をつなぎます。
- 
-    例：MakeのWebhookにPOSTする場合（URLはGitHubに書かず、Secretsに置いてください）
-        import requests
+    """MakeのWebhook経由でLINEの家族グループに送る"""
+    import requests
+
+    try:
         url = st.secrets["MAKE_WEBHOOK_URL"]
+    except Exception:
+        return False, "MAKE_WEBHOOK_URL が Secrets に設定されていません。"
+    try:
         r = requests.post(url, json={"to": "group", "text": text}, timeout=10)
-        return r.ok, f"ステータスコード: {r.status_code}"
-    """
-    return False, "LINE送信はまだ接続されていません（send_line 関数に送信処理を追加してください）。"
+    except requests.RequestException as e:
+        return False, f"送信に失敗しました（{type(e).__name__}）"
+    if r.ok:
+        return True, "LINEに送信しました。"
+    return False, f"送信に失敗しました（ステータスコード: {r.status_code}）"
  
  
 # ==========================================
