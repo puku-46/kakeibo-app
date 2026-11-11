@@ -309,7 +309,7 @@ def send_line(text):
     except Exception:
         return False, "MAKE_WEBHOOK_URL が Secrets に設定されていません。"
     try:
-        r = requests.post(url, json={"to": "group", "text": text}, timeout=10)
+        r = requests.post(url, json={"text": text}, timeout=10)
     except requests.RequestException as e:
         return False, f"送信に失敗しました（{type(e).__name__}）"
     if r.ok:
