@@ -620,7 +620,10 @@ with tab3:
                 )
                 if st.button("選んだお店をLINEに送信", key="line_store"):
                     ok, info = send_line(store_text)
-                    st.success(info) if ok else st.warning(info)
+                    if ok:
+                        st.success(info)
+                    else:
+                        st.warning(info) 
 
         # --- CSVエクスポート ---
         st.subheader("📥 CSVエクスポート")
