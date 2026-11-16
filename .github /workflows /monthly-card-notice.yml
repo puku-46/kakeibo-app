@@ -1,0 +1,21 @@
+name: monthly-card-notice
+
+on:
+  schedule:
+    - cron: "0 0 1 * *"   # 毎月1日 午前9時（日本時間）
+  workflow_dispatch:       # 手動でも実行できるようにする
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install gspread pandas requests
+      - run: python monthly_card_notice.py
+        env:
+          GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
