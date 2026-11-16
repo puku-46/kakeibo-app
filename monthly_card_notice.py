@@ -49,5 +49,6 @@ if WITH_DETAIL and len(target) > 0:
         lines.append(f"・{r['日付'].strftime('%m/%d')} {store} {int(r['カード利用額']):,}円")
 
 r = requests.post(os.environ["MAKE_WEBHOOK_URL"], json={"text": "\n".join(lines)}, timeout=30)
+print("Makeの応答:", r.status_code, r.text)
 r.raise_for_status()
 print("送信しました:", period, total)
