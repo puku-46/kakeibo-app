@@ -293,7 +293,9 @@ def build_store_message(title, target_df, stores, with_detail):
     lines = [f"【{title} お店別の支出】"]
     for s in stores:
         d = target_df[target_df["店名"] == s]
-        lines.append(f"■{s}: {int(d['金額'].sum()):,}円（{len(d)}回）")
+        total = int(d["金額"].sum())
+        avg = round(total / len(d))
+        lines.append(f"■{s}: {total:,}円（{len(d)}回・平均{avg:,}円）")
         if with_detail:
             for _, r in d.sort_values("日付").iterrows():
                 lines.append(f"　・{r['日付'].strftime('%m/%d')} {int(r['金額']):,}円")
